@@ -2,6 +2,8 @@ use std::{
     fmt::Error,
     fs::File,
     io::{self, Read},
+    ops::Index,
+    thread::current,
 };
 
 use regex::Regex;
@@ -35,27 +37,44 @@ fn first_part() -> () {
     println!("all numbers: {:?}", all_numbers)
 }
 
-fn second_part() {
+fn second_part() -> () {
     let data = parse_data().expect("an error occurred while opening the file");
     let parsed_data: Vec<&str> = data.split("\n").into_iter().collect();
     let split_regex =
         Regex::new(r"(zero|one|two|three|four|five|six|seven|eight|nine|\d)").unwrap();
     let mut result_all = 0;
     for item in parsed_data {
-        let mut all_results: Vec<&str> = vec![];
-        for current in split_regex.find_iter(item) {
-            all_results.push(current.as_str());
+        let mut collected_numbers: Vec<String> = vec![];
+        for single_char in 0..item.as_bytes().len() {
+            let mut complete_char = Vec::new();
+            let mut new_iter: bool = true;
+            for current_word in single_char..item.as_bytes().len() {
+                if let Some(byte) = item.as_bytes().get(current_word) {
+                    complete_char.push(*byte);
+                }
+            }
+            if let Ok(word) = String::from_utf8(complete_char) {
+                let found_nums: Vec<String> = split_regex
+                    .find_iter(&word)
+                    .map(|x| x.as_str().to_string())
+                    .collect();
+                for num in found_nums {
+                    if !collected_numbers.contains(&num) && new_iter {
+                        collected_numbers.push(num)
+                    }
+                    new_iter = false;
+                }
+            } else {
+                println!("invalid utf-8 sequence")
+            }
         }
-
-        println!("current: {:?}", all_results);
-
-        let mut first_num = match all_results[0].parse::<i32>() {
+        let mut first_num = match collected_numbers[0].parse::<i32>() {
             Ok(val) => val,
             Err(_) => -1,
         };
 
         if first_num == -1 {
-            first_num = match all_results[0] {
+            first_num = match &collected_numbers[0][..] {
                 "zero" => 0,
                 "one" => 1,
                 "two" => 2,
@@ -70,13 +89,13 @@ fn second_part() {
             }
         }
 
-        let mut last_num = match all_results[all_results.len() - 1].parse::<i32>() {
+        let mut last_num = match collected_numbers[collected_numbers.len() - 1].parse::<i32>() {
             Ok(val) => val,
             Err(_) => -1,
         };
 
         if last_num == -1 {
-            last_num = match all_results[all_results.len() - 1] {
+            last_num = match &collected_numbers[collected_numbers.len() - 1][..] {
                 "zero" => 0,
                 "one" => 1,
                 "two" => 2,
@@ -96,7 +115,7 @@ fn second_part() {
             .parse::<i32>()
             .expect("could not parse value");
     }
-    println!("{:?}", result_all);
+    println!("result: {:?}", result_all);
 }
 
 fn main() {
