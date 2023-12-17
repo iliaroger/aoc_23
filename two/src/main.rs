@@ -118,6 +118,75 @@ fn part_one() -> std::result::Result<(), io::Error> {
     Ok(())
 }
 
+fn part_two() -> std::result::Result<(), io::Error> {
+    let data = fs::read("../two/data/data.txt").expect("could not read the file");
+    let parsed_data: String = match String::from_utf8(data) {
+        Ok(text) => text,
+        Err(e) => return Err(io::Error::new(io::ErrorKind::InvalidData, e)),
+    };
+    let vec_text: Vec<&str> = parsed_data.split("\n").collect();
+    let red_regex = regex::Regex::new(r"(\d+) red").map_err(RegexErrorWrapper)?;
+    let blue_regex = regex::Regex::new(r"(\d+) blue").map_err(RegexErrorWrapper)?;
+    let green_regex = regex::Regex::new(r"(\d+) green").map_err(RegexErrorWrapper)?;
+    let mut result: i32 = 0;
+
+    for item in vec_text {
+        let mut green_colors: Vec<&str> = vec![];
+        let mut blue_colors: Vec<&str> = vec![];
+        let mut red_colors: Vec<&str> = vec![];
+
+        let all_reds: Vec<&str> = red_regex
+            .find_iter(item)
+            .map(|x| {
+                let first_part: Vec<&str> = x.as_str().splitn(2, " ").collect();
+                *first_part.get(0).unwrap_or(&"")
+            })
+            .collect();
+        red_colors.extend(all_reds);
+
+        let all_blues: Vec<&str> = blue_regex
+            .find_iter(item)
+            .map(|x| {
+                let first_part: Vec<&str> = x.as_str().splitn(2, " ").collect();
+                *first_part.get(0).unwrap_or(&"")
+            })
+            .collect();
+        blue_colors.extend(all_blues);
+
+        let all_greens: Vec<&str> = green_regex
+            .find_iter(item)
+            .map(|x| {
+                let first_part: Vec<&str> = x.as_str().splitn(2, " ").collect();
+                *first_part.get(0).unwrap_or(&"")
+            })
+            .collect();
+        green_colors.extend(all_greens);
+
+        let max_red_number = red_colors
+            .iter()
+            .map(|x| x.parse::<i32>().unwrap_or(0))
+            .max()
+            .unwrap_or(0);
+        let max_blue_number = blue_colors
+            .iter()
+            .map(|x| x.parse::<i32>().unwrap_or(0))
+            .max()
+            .unwrap_or(0);
+        let max_green_number = green_colors
+            .iter()
+            .map(|x| x.parse::<i32>().unwrap_or(0))
+            .max()
+            .unwrap_or(0);
+
+        result += max_red_number * max_blue_number * max_green_number
+    }
+
+    println!("{:?}", result);
+
+    Ok(())
+}
+
 fn main() {
-    part_one().expect("something happend while calling the function");
+    // part_one().expect("something happened while calling the function");
+    part_two().expect("something happened while parsing the data");
 }
