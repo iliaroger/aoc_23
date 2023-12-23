@@ -9,6 +9,10 @@ fn part_one(data: &Vec<&str>) {
         is_tagged: bool,
     }
 
+    /*
+    Part 1: 925
+    Part 2: 6756
+    */
     struct PositionIndex(u32, u32);
 
     let parsed_data: Vec<&str> = data.clone();
@@ -20,7 +24,7 @@ fn part_one(data: &Vec<&str>) {
         for x in parsed_data[y].chars().enumerate() {
             if symbols.contains(x.1) {
                 {
-                    if y > 1 {
+                    if y >= 1 {
                         let left_border = if x.0 >= 4 { x.0 - 4 } else { 0 };
                         let right_border = if x.0 + 5 <= parsed_data[y].len() {
                             x.0 + 5
@@ -28,13 +32,13 @@ fn part_one(data: &Vec<&str>) {
                             parsed_data[y].len()
                         };
                         let top_row = &parsed_data[y - 1][left_border..right_border];
+
                         let found_numbers: Vec<&str> = numbers_regex
                             .find_iter(top_row)
                             .map(|x| x.as_str())
                             .collect();
 
                         let mut numbers_data: Vec<PointData> = vec![];
-
                         for number in found_numbers {
                             let item_position: Option<(usize, usize)> =
                                 match parsed_data[y - 1].find(number) {
@@ -52,7 +56,8 @@ fn part_one(data: &Vec<&str>) {
                             });
 
                             for numbers in &mut numbers_data {
-                                let top_left_position = (x.0 - 1) as u32;
+                                let top_left_position =
+                                    if x.0 > 1 { (x.0 - 1) as u32 } else { 0 as u32 };
                                 let top_mid_position = (x.0) as u32;
                                 let top_right_position = (x.0 + 1) as u32;
 
