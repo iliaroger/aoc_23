@@ -1,9 +1,9 @@
 use std::fs;
 
-// 23441
 fn part_one(data: String) {
     let text_data: Vec<&str> = data.split("\n").collect();
     let mut results: i32 = 0;
+
     for row in text_data {
         let row_parsed: Vec<&str> = row.splitn(2, "|").collect();
 
